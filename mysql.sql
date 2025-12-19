@@ -13,8 +13,6 @@ CREATE TABLE users (
     password_hash   VARCHAR(255) NOT NULL,
     avatar_url      VARCHAR(255),
     role            ENUM('USER','ADMIN') DEFAULT 'USER',
-    reset_token     VARCHAR(255),
-    reset_token_expiry DATETIME,
     created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );

@@ -114,14 +114,6 @@ const Login = () => {
                 required
               />
             </div>
-            <div className="text-sm text-right">
-              <Link
-                to="/forgot-password"
-                className="text-primary hover:underline"
-              >
-                Quên mật khẩu?
-              </Link>
-            </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <Button
