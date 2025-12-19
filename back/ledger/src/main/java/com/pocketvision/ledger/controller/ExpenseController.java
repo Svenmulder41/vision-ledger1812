@@ -2,7 +2,8 @@ package com.pocketvision.ledger.controller;
 
 import com.pocketvision.ledger.model.Expense;
 import com.pocketvision.ledger.service.ExpenseService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.pocketvision.ledger.util.SecurityUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,10 +14,11 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/expenses")
+@RequiredArgsConstructor
 public class ExpenseController {
 
-    @Autowired
-    private ExpenseService expenseService;
+    private final ExpenseService expenseService;
+    private final SecurityUtils securityUtils;
 
     @GetMapping
     public ResponseEntity<?> getAllByUser(@RequestParam Long userId) {
@@ -24,8 +26,12 @@ public class ExpenseController {
             if (userId == null) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Thiếu thông tin userId"));
             }
+            securityUtils.validateUserId(userId); // Bảo mật: kiểm tra userId
             List<Expense> expenses = expenseService.getExpensesByUser(userId);
             return ResponseEntity.ok(expenses);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Lỗi server: " + e.getMessage()));
@@ -133,18 +139,24 @@ public class ExpenseController {
     public ResponseEntity<?> searchExpenses(
             @RequestParam Long userId,
             @RequestParam(required = false) String keyword) {
+        try {
+            if (keyword == null || keyword.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("⚠️ Vui lòng nhập từ khóa tìm kiếm");
+            }
+            
+            securityUtils.validateUserId(userId); // Bảo mật: kiểm tra userId
 
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("⚠️ Vui lòng nhập từ khóa tìm kiếm");
+            List<Expense> results = expenseService.searchExpenses(userId, keyword);
+
+            if (results.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("❌ Không tìm thấy kết quả phù hợp");
+            }
+
+            return ResponseEntity.ok(results);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", e.getMessage()));
         }
-
-        List<Expense> results = expenseService.searchExpenses(userId, keyword);
-
-        if (results.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("❌ Không tìm thấy kết quả phù hợp");
-        }
-
-        return ResponseEntity.ok(results);
     }
 
     @GetMapping("/fill")
@@ -157,6 +169,7 @@ public class ExpenseController {
             @RequestParam(required = false) String category) {
 
         try {
+            securityUtils.validateUserId(userId); // Bảo mật: kiểm tra userId
             List<Expense> allExpenses = expenseService.getExpensesByUser(userId);
 
             List<Expense> filtered = allExpenses.stream()
@@ -192,6 +205,9 @@ public class ExpenseController {
 
             return ResponseEntity.ok(filtered);
 
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Lỗi khi lọc dữ liệu: " + e.getMessage()));

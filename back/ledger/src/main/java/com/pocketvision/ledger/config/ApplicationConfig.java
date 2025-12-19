@@ -25,11 +25,12 @@ public class ApplicationConfig {
     @Bean
     public UserDetailsService userDetailsService() {
         return username -> userRepository.findByEmail(username)
-                .map(user -> new org.springframework.security.core.userdetails.User(
-                        // Mapping từ User Entity của bạn sang User của Spring Security
+                .map(user -> new CustomUserDetails(
+                        // Mapping từ User Entity của bạn sang CustomUserDetails (có user ID)
                         user.getEmail(),
                         user.getPasswordHash(),
-                        Collections.singleton(new SimpleGrantedAuthority(user.getRole().name()))
+                        Collections.singleton(new SimpleGrantedAuthority(user.getRole().name())),
+                        user.getId() // Lưu user ID để tránh query lại
                 ))
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + username));
     }

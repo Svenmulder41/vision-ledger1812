@@ -1,8 +1,10 @@
 package com.pocketvision.ledger.controller;
 
 import com.pocketvision.ledger.service.ReportService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.pocketvision.ledger.util.SecurityUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,10 +14,11 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/reports")
 // Đã bỏ @CrossOrigin (xử lý tại WebConfig)
+@RequiredArgsConstructor
 public class ReportController {
 
-    @Autowired
-    private ReportService reportService;
+    private final ReportService reportService;
+    private final SecurityUtils securityUtils;
 
     @GetMapping("/summary")
     public ResponseEntity<?> getReportSummary(
@@ -27,10 +30,15 @@ public class ReportController {
             if (userId == null) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Thiếu userId"));
             }
+            
+            securityUtils.validateUserId(userId); // Bảo mật: kiểm tra userId
 
             Map<String, Object> reportData = reportService.getReportSummary(userId, startDate, endDate);
             return ResponseEntity.ok(reportData);
             
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
                 "message", "Lỗi khi tạo báo cáo: " + e.getMessage()
@@ -49,10 +57,15 @@ public class ReportController {
             if (userId == null) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Thiếu userId"));
             }
+            
+            securityUtils.validateUserId(userId); // Bảo mật: kiểm tra userId
 
             Map<String, Object> chartData = reportService.getChartData(userId, chartType, startDate, endDate);
             return ResponseEntity.ok(chartData);
             
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
                 "message", "Lỗi khi tạo biểu đồ: " + e.getMessage()
@@ -71,6 +84,8 @@ public class ReportController {
             if (userId == null) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Thiếu userId"));
             }
+            
+            securityUtils.validateUserId(userId); // Bảo mật: kiểm tra userId
 
             if (startDate == null || endDate == null) {
                 endDate = LocalDate.now();
@@ -80,6 +95,9 @@ public class ReportController {
             Map<String, Object> reportData = reportService.getAdvancedReport(userId, reportType, startDate, endDate);
             return ResponseEntity.ok(reportData);
             
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
                 "message", "Lỗi khi tạo báo cáo nâng cao: " + e.getMessage()
@@ -98,6 +116,8 @@ public class ReportController {
             if (userId == null) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Thiếu userId"));
             }
+            
+            securityUtils.validateUserId(userId); // Bảo mật: kiểm tra userId
 
             Map<String, Object> placeholderResponse = Map.of(
                 "message", "Tính năng xuất báo cáo " + format.toUpperCase() + " đang được phát triển",

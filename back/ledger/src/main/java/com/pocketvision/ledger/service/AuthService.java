@@ -7,6 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.Optional;
 
 @Service
@@ -61,5 +64,67 @@ public class AuthService {
         }
 
         return user;
+    }
+
+    // --- QUÊN MẬT KHẨU ---
+    public void forgotPassword(String email) {
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            // Không báo lỗi để tránh email enumeration attack
+            return;
+        }
+
+        User user = userOpt.get();
+        
+        // Tạo reset token ngẫu nhiên
+        String resetToken = generateResetToken();
+        LocalDateTime expiry = LocalDateTime.now().plusHours(1); // Token hết hạn sau 1 giờ
+
+        user.setResetToken(resetToken);
+        user.setResetTokenExpiry(expiry);
+        userRepository.save(user);
+
+        // TODO: Gửi email với reset token
+        // Hiện tại chỉ log ra console để test
+        System.out.println("=== RESET PASSWORD TOKEN ===");
+        System.out.println("Email: " + email);
+        System.out.println("Reset Token: " + resetToken);
+        System.out.println("Link: http://localhost:8081/reset-password?token=" + resetToken);
+        System.out.println("Token expires at: " + expiry);
+        System.out.println("============================");
+    }
+
+    // --- ĐẶT LẠI MẬT KHẨU ---
+    public void resetPassword(String token, String newPassword) {
+        Optional<User> userOpt = userRepository.findByResetToken(token);
+        if (userOpt.isEmpty()) {
+            throw new IllegalArgumentException("Token không hợp lệ hoặc đã hết hạn!");
+        }
+
+        User user = userOpt.get();
+
+        // Kiểm tra token có hết hạn không
+        if (user.getResetTokenExpiry() == null || user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
+            // Xóa token đã hết hạn
+            user.setResetToken(null);
+            user.setResetTokenExpiry(null);
+            userRepository.save(user);
+            throw new IllegalArgumentException("Token đã hết hạn! Vui lòng yêu cầu lại.");
+        }
+
+        // Cập nhật mật khẩu mới
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setResetToken(null); // Xóa token sau khi đã dùng
+        user.setResetTokenExpiry(null);
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+    }
+
+    // Tạo reset token ngẫu nhiên
+    private String generateResetToken() {
+        SecureRandom random = new SecureRandom();
+        byte[] bytes = new byte[32];
+        random.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 }

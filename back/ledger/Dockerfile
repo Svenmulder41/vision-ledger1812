@@ -1,10 +1,10 @@
-# Giai đoạn 1: Build file JAR bằng Maven
+# 1. Dùng Maven để build code
 FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
 COPY . .
 RUN mvn clean package -DskipTests
 
-# Giai đoạn 2: Chạy ứng dụng bằng Java 21
+# 2. Dùng Java 21 nhẹ để chạy file JAR
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=build /app/target/ledger-0.0.1-SNAPSHOT.jar app.jar

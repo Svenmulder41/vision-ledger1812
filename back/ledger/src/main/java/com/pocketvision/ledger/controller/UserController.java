@@ -20,6 +20,10 @@ public class UserController {
 
     private void checkOwnership(Long resourceId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new RuntimeException("Người dùng chưa được xác thực");
+        }
+        
         String currentEmail = auth.getName(); 
         
         User user = userService.getUserById(resourceId)

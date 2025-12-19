@@ -2,6 +2,7 @@ package com.pocketvision.ledger.controller;
 
 import com.pocketvision.ledger.model.Budget;
 import com.pocketvision.ledger.service.BudgetService;
+import com.pocketvision.ledger.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import java.util.Optional;
 public class BudgetController {
 
     private final BudgetService budgetService;
+    private final SecurityUtils securityUtils;
 
     // 1. Lấy danh sách ngân sách của user (Có thể lọc theo tháng nếu truyền param)
     @GetMapping
@@ -27,6 +29,8 @@ public class BudgetController {
             if (userId == null) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Thiếu thông tin userId"));
             }
+            
+            securityUtils.validateUserId(userId); // Bảo mật: kiểm tra userId
 
             List<Budget> budgets;
             
@@ -41,6 +45,9 @@ public class BudgetController {
             }
 
             return ResponseEntity.ok(budgets);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Lỗi khi lấy danh sách ngân sách: " + e.getMessage()));
@@ -62,10 +69,15 @@ public class BudgetController {
             if (!isValidMonthYear(monthYear)) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Định dạng tháng/năm không hợp lệ. Sử dụng format: yyyy-MM"));
             }
+            
+            securityUtils.validateUserId(userId); // Bảo mật: kiểm tra userId
 
             List<Budget> monthlyBudgets = budgetService.getBudgetsByMonth(userId, monthYear);
             return ResponseEntity.ok(monthlyBudgets);
 
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Lỗi khi lấy ngân sách theo tháng: " + e.getMessage()));

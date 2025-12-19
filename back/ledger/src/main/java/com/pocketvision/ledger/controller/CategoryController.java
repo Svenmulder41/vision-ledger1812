@@ -3,7 +3,7 @@ package com.pocketvision.ledger.controller;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,17 +17,26 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.pocketvision.ledger.model.Category;
 import com.pocketvision.ledger.service.CategoryService;
+import com.pocketvision.ledger.util.SecurityUtils;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/categories")
+@RequiredArgsConstructor
 public class CategoryController {
 
-    @Autowired
-    private CategoryService categoryService;
+    private final CategoryService categoryService;
+    private final SecurityUtils securityUtils;
 
     @GetMapping
-    public ResponseEntity<List<Category>> getAllByUserId(@RequestParam Long userId) {
-        return ResponseEntity.ok(categoryService.getCategoriesByUser(userId));
+    public ResponseEntity<?> getAllByUserId(@RequestParam Long userId) {
+        try {
+            securityUtils.validateUserId(userId); // Bảo mật: kiểm tra userId
+            return ResponseEntity.ok(categoryService.getCategoriesByUser(userId));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", e.getMessage()));
+        }
     }
 
     @PostMapping
