@@ -51,12 +51,14 @@ Deploy ứng dụng lên:
 Trong Render dashboard, thiết lập:
 
 - **Name**: `vision-ledger-backend`
-- **Environment**: `Java`
+- **Environment**: `Docker` ⚠️ (Render chỉ hỗ trợ Docker)
 - **Region**: `Singapore` (hoặc gần nhất)
 - **Branch**: `main` (hoặc branch bạn muốn deploy)
-- **Root Directory**: `back/ledger`
-- **Build Command**: `mvn clean package -DskipTests`
-- **Start Command**: `java -jar target/ledger-0.0.1-SNAPSHOT.jar`
+- **Root Directory**: `back/ledger` (quan trọng!)
+- **Dockerfile Path**: `Dockerfile` (tự động detect)
+- **Docker Build Context**: `back/ledger` (hoặc để trống, Render sẽ tự detect)
+
+**Lưu ý**: Render sẽ tự động build Docker image từ Dockerfile trong `back/ledger/`
 
 ### 2.3. Thiết Lập Environment Variables
 
@@ -106,10 +108,16 @@ WEB_LOG_LEVEL=WARN
 ### 2.4. Deploy Backend
 
 1. Click **"Create Web Service"**
-2. Render sẽ tự động build và deploy
-3. Đợi build hoàn tất (5-10 phút)
+2. Render sẽ tự động:
+   - Build Docker image từ Dockerfile trong `back/ledger/`
+   - Deploy container
+3. Đợi build hoàn tất (5-10 phút - Docker build lâu hơn)
 4. **Lưu lại URL backend** (ví dụ: `https://vision-ledger-backend.onrender.com`)
 5. Test endpoint: `https://your-backend.onrender.com/api/auth/login`
+
+**Lưu ý**: 
+- Lần đầu build Docker sẽ mất thời gian (download base images)
+- Kiểm tra logs nếu có lỗi build
 
 ### 2.5. Kiểm Tra Logs
 
@@ -205,7 +213,10 @@ https://your-backend.onrender.com/api/auth/login
 **Backend không start:**
 - Kiểm tra logs trong Render
 - Đảm bảo JWT_SECRET đã được set
-- Kiểm tra Java version (cần Java 21)
+- Kiểm tra Docker build có thành công không
+- Kiểm tra Dockerfile path đúng (`back/ledger/Dockerfile`)
+- Kiểm tra root directory đúng (`back/ledger`)
+- Kiểm tra Dockerfile có trong repository chưa
 
 **Frontend không kết nối được Backend:**
 - Kiểm tra `VITE_API_URL` trong Vercel

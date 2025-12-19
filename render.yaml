@@ -1,12 +1,11 @@
 services:
   - type: web
     name: vision-ledger-backend
-    env: java
+    env: docker
     region: singapore
     plan: free
-    rootDir: back/ledger
-    buildCommand: mvn clean package -DskipTests
-    startCommand: java -jar target/ledger-0.0.1-SNAPSHOT.jar
+    dockerfilePath: back/ledger/Dockerfile
+    dockerContext: back/ledger
     healthCheckPath: /api/auth/login
     envVars:
       - key: SPRING_PROFILES_ACTIVE

@@ -1,52 +1,92 @@
+# Vision Ledger Frontend
 
-## How can I edit this code?
+Frontend application cho Vision Ledger - Quản lý tài chính cá nhân.
 
-There are several ways of editing your application.
+## 🚀 Development
 
+### Prerequisites
 
-**Use your preferred IDE**
+- Node.js 18+ và npm (hoặc yarn/pnpm)
+- [Install Node.js với nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Setup
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+```bash
+# 1. Clone repository
 git clone <YOUR_GIT_URL>
+cd vision-ledger1812
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# 2. Navigate to frontend directory
+cd front
 
-# Step 3: Install the necessary dependencies.
-npm i
+# 3. Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# 4. Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Development server sẽ chạy tại `http://localhost:5173` (hoặc port khác nếu 5173 đã được sử dụng)
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Build for Production
 
-**Use GitHub Codespaces**
+```bash
+npm run build
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Build output sẽ ở trong thư mục `dist/`
 
-## What technologies are used for this project?
+### Preview Production Build
 
-This project is built with:
+```bash
+npm run preview
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🛠️ Tech Stack
+
+- **Vite** - Build tool và dev server
+- **React 18** - UI framework
+- **TypeScript** - Type safety
+- **shadcn/ui** - UI components
+- **Tailwind CSS** - Styling
+- **React Router** - Routing
+- **Axios** - HTTP client
+- **TanStack Query** - Data fetching
+
+## 📁 Project Structure
+
+```
+front/
+├── src/
+│   ├── components/     # React components
+│   ├── pages/          # Page components
+│   ├── lib/            # Utilities và helpers
+│   ├── hooks/          # Custom React hooks
+│   ├── contexts/       # React contexts
+│   └── services/       # API services
+├── public/             # Static assets
+└── package.json        # Dependencies
+```
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Tạo file `.env` trong thư mục `front/`:
+
+```bash
+VITE_API_URL=http://localhost:8080/api
+```
+
+Cho production, set trong Vercel dashboard:
+```bash
+VITE_API_URL=https://your-backend.onrender.com/api
+```
+
+## 📝 Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
 
