@@ -31,7 +31,13 @@ build/
 
 ### VS Code ###
 .vscode/
-application.properties
+
+# Local environment files (chứa thông tin nhạy cảm)
+application-local.properties
+.env
+.env.local
+
+# Temp files
 temp\auth
 temp\Budget
 temp\expense
